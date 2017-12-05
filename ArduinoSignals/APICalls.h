@@ -1,17 +1,17 @@
 /*
-Copyright 2017 Google LLC
+  Copyright 2017 Google LLC
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
 
     https://www.apache.org/licenses/LICENSE-2.0
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
 */
 
 #include <Arduino.h>
@@ -20,7 +20,7 @@ limitations under the License.
 #include <WiFiClientSecure.h>
 #include <ESP8266HTTPClient.h>
 #include <Servo.h>
-#include <Time.h>
+#include <time.h>
 #include "Credentials.h"
 
 #define SERVO_PIN 14
@@ -28,6 +28,8 @@ limitations under the License.
 // Servo Positions and Intent specific Numbers
 
 #define CENTER_POSITION 90
+#define MAX_POSITION 180
+#define SYNC_MOTOR_DELAY 60000 * 5 // 5 min
 
 // Crypto Currency
 #define CURRENCY_UP 180
@@ -65,85 +67,86 @@ limitations under the License.
 
 class PaperSignals
 {
-public:
-	PaperSignals() {};
-	~PaperSignals() {};
+  public:
+    PaperSignals() {};
+    ~PaperSignals() {};
 
-	void StartUp();
-	String getJson(String host, String url);
-	String getJsonHTTP(String host, String url);
-	void ParseIntentName(String intentName, String JSONData);
-	String getSignalByID(String signalID);
-	void RunPaperSignals();
+    void StartUp();
+    String getJson(String host, String url);
+    String getJsonHTTP(String host, String url);
+    void ParseIntentName(String intentName, String JSONData);
+    String getSignalByID(String signalID);
+    void RunPaperSignals();
 
-	// Intent Types
-	String CryptoCurrencyType = "CryptoCurrency";
-	String ShortsOrPantsType = "ShortsOrPants";
-	String UmbrellaType = "Umbrella";
-	String TimerType = "Timer";
-	String CelebrateType = "StretchBreak";
-	String RocketLaunchType = "RocketLaunch";
-	String CountdownType = "Countdown";
-	String TestSignalType = "TestSignal";
-	String StockType = "Stock";
-	String CustomIntentType = "YOUR_CUSTOM_INTENT_NAME";
+    // Intent Types
+    String CryptoCurrencyType = "CryptoCurrency";
+    String ShortsOrPantsType = "ShortsOrPants";
+    String UmbrellaType = "Umbrella";
+    String TimerType = "Timer";
+    String CelebrateType = "StretchBreak";
+    String RocketLaunchType = "RocketLaunch";
+    String CountdownType = "Countdown";
+    String TestSignalType = "TestSignal";
+    String StockType = "Stock";
+    String CustomIntentType = "YOUR_CUSTOM_INTENT_NAME";
 
-	String currentIntent = "";
-	String currentIntentTimeStamp = "";
-	bool updatedIntentTimeStamp = true;
+    String currentIntent = "";
+    String currentIntentTimeStamp = "";
+    bool updatedIntentTimeStamp = true;
 
-	unsigned long lastWeatherCall = 0;
-	unsigned long timeBetweenWeatherCalls = 120000;
-	bool throttleWeatherAPI();
+    unsigned long lastWeatherCall = 0;
+    unsigned long timeBetweenWeatherCalls = 120000;
+    bool throttleWeatherAPI();
 
 
-	unsigned long lastStockCall = 0;
-	unsigned long timeBetweenStockCalls = 120000;
-	bool throttleStockAPI();
+    unsigned long lastStockCall = 0;
+    unsigned long timeBetweenStockCalls = 120000;
+    bool throttleStockAPI();
 
-public:
+  public:
 
-	// Use WiFiClientSecure class to create TLS connection
-	WiFiClientSecure client;
-	const int httpsPort = 443;
+    // Use WiFiClientSecure class to create TLS connection
+    WiFiClientSecure client;
+    const int httpsPort = 443;
 
-	// Signal Functions
-	void DefaultExecution(String JSONData);
-	void CountdownExecution(String JSONData);
-	void TimerExecution(String JSONData);
-	void CryptoCurrencyExecution(String JSONData);
-	void ShortsOrPantsExecution(String JSONData);
-	void UmbrellaExecution(String JSONData);
-	void CelebrateExecution(String JSONData);
-	void RocketExecution(String JSONData);
-	void TestSignalExecution(String JSONData);
-	void StockExecution(String JSONData);
-	void CustomExecution(String JSONData);
-	String GetWeather(String JSONData);
-	String GetLatLong(String JSONData);
+    // Signal Functions
+    void DefaultExecution(String JSONData);
+    void CountdownExecution(String JSONData);
+    void TimerExecution(String JSONData);
+    void CryptoCurrencyExecution(String JSONData);
+    void ShortsOrPantsExecution(String JSONData);
+    void UmbrellaExecution(String JSONData);
+    void CelebrateExecution(String JSONData);
+    void RocketExecution(String JSONData);
+    void TestSignalExecution(String JSONData);
+    void StockExecution(String JSONData);
+    void CustomExecution(String JSONData);
+    String GetWeather(String JSONData);
+    String GetLatLong(String JSONData);
 
-	double GetBitcoin();
-	double GetEthereum();
+    double GetBitcoin();
+    double GetEthereum();
 
-	void MoveServoToPosition(int position, int speed);
+    void MoveServoToPosition(int position, int speed);
 
-	double initialBitcoin;
-	double initialEthereum;
+    double initialBitcoin;
+    double initialEthereum;
 
-	int lastTimerTime = 0;
+    int lastTimerTime = 0;
 
-	unsigned long breakTimeLength = 60000; // 1 Minute Default
-	unsigned long breakTimeInterval = 900000; // 15 Minute Default
-	unsigned long lastBreakTime = 0;
+    unsigned long breakTimeLength = 60000; // 1 Minute Default
+    unsigned long breakTimeInterval = 900000; // 15 Minute Default
+    unsigned long lastBreakTime = 0;
 
-	unsigned long rocketStartedTime = 0;
-	boolean rocketLaunched = false;
+    unsigned long rocketStartedTime = 0;
+    boolean rocketLaunched = false;
 
-	int numTestServoSwings = 0;
+    int numTestServoSwings = 0;
+    unsigned long nextServoUpdate = 0;
 
-	String mostRecentDateString = "";
-	String NextRocketLaunchTime = "";
+    String mostRecentDateString = "";
+    String NextRocketLaunchTime = "";
 
-	Servo myservo;
-	int currentServoPosition = 0;
+    Servo myservo;
+    int currentServoPosition = 0;
 };
